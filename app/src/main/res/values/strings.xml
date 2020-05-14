@@ -4,4 +4,5 @@
     <string name="quizapp">Quiz App</string>
     <string name="title_activity_questions">QuestionsActivity</string>
     <string name="title_activity_developer">DeveloperActivity</string>
+    <string name="sets">Sets</string>
 </resources>

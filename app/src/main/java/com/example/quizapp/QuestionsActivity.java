@@ -2,132 +2,170 @@ package com.example.quizapp;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.animation.Animator;
 import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.appcompat.widget.Toolbar;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class QuestionsActivity extends AppCompatActivity {
 
-    TextView textView1;
-    Button submit, quit;
-    RadioGroup radio_g;
-    RadioButton rb1,rb2,rb3, rb4;
+    private TextView question, noIndicator;
+    private FloatingActionButton bookmarkbtn;
+    private LinearLayout optionsContainer;
+    private Button shareBtn, nextBtn;
+    private int count=0,position=0;
+    private List<QuestionModel> list;
+    private int score = 0;
 
-    String questions[] = {
-            "Which method can be defined only once in a program?",
-            "Which of these is not a bitwise operator?",
-            "Which keyword is used by method to refer to the object that invoked it?",
-            "Which of these keywords is used to define interfaces in Java?",
-            "Which of these access specifiers can be used for an interface?",
-            "Which of the following is correct way of importing an entire package ‘pkg’?",
-            "What is the return type of Constructors?",
-            "Which of the following package stores all the standard java classes?",
-            "Which of these method of class String is used to compare two String objects for their equality?",
-            "An expression involving byte, int, & literal numbers is promoted to which of these?"
-    };
-    String answers[] = {"main method","<=","this","interface","public","import pkg.*","None of the mentioned","java","equals()","int"};
-    String opt[] = {
-            "finalize method","main method","static method","private method",
-            "&","&=","|=","<=",
-            "import","this","catch","abstract",
-            "Interface","interface","intf","Intf",
-            "public","protected","private","All of the mentioned",
-            "Import pkg.","import pkg.*","Import pkg.*","import pkg.",
-            "int","float","void","None of the mentioned",
-            "lang","java","util","java.packages",
-            "equals()","Equals()","isequal()","Isequal()",
-            "int","long","byte","float"
-    };
-    int flag = 0;
-    public static int marks=0,correct=0, wrong = 0;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_questions);
 
-        final TextView score = findViewById(R.id.tvscorecount);
-        TextView textView = findViewById(R.id.DispName);
-        Intent intent = getIntent();
-        String name = intent.getStringExtra("myname");
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
-        if (name.trim().equals(""))
-            textView.setText("Hello User");
-        else
-            textView.setText("Hello " + name);
+        question = findViewById(R.id.question);
+        noIndicator = findViewById(R.id.no_indicator);
+        bookmarkbtn = findViewById(R.id.bookmark_btn);
+        optionsContainer = findViewById(R.id.options_container);
+        shareBtn = findViewById(R.id.share_btn);
+        nextBtn = findViewById(R.id.next_btn);
 
-        submit = findViewById(R.id.nextquestion);
-        quit = findViewById(R.id.buttonquit);
-        textView1 = findViewById(R.id.tvque);
+        list = new ArrayList<>();
+        list.add(new QuestionModel("question1", "a", "b", "c", "d", "b"));
+        list.add(new QuestionModel("question2", "a", "b", "c", "d", "c"));
+        list.add(new QuestionModel("question3", "a", "b", "c", "d", "d"));
+        list.add(new QuestionModel("question4", "a", "b", "c", "d", "a"));
+        list.add(new QuestionModel("question5", "a", "b", "c", "d", "a"));
+        list.add(new QuestionModel("question6", "a", "b", "c", "d", "d"));
+        list.add(new QuestionModel("question7", "a", "b", "c", "d", "a"));
+        list.add(new QuestionModel("question8", "a", "b", "c", "d", "b"));
+        list.add(new QuestionModel("question9", "a", "b", "c", "d", "c"));
 
-        radio_g = findViewById(R.id.answersgrp);
-        rb1=(RadioButton)findViewById(R.id.radioButton);
-        rb2=(RadioButton)findViewById(R.id.radioButton2);
-        rb3=(RadioButton)findViewById(R.id.radioButton3);
-        rb4=(RadioButton)findViewById(R.id.radioButton4);
-        textView1.setText(questions[flag]);
-        rb1.setText(opt[0]);
-        rb2.setText(opt[1]);
-        rb3.setText(opt[2]);
-        rb4.setText(opt[3]);
-        
-        submit.setOnClickListener(new View.OnClickListener() {
+
+        for (int i = 0; i < 4; i++) {
+            optionsContainer.getChildAt(i).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    checkAnswer((Button) v);
+                }
+            });
+        }
+
+        playAnim(question,0,list.get(position).getQuestion());
+
+        nextBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                
-                if (radio_g.getCheckedRadioButtonId()==-1)
-                {
-                    Toast.makeText(QuestionsActivity.this, "Please select one choice", Toast.LENGTH_SHORT).show();
+                nextBtn.setEnabled(false);
+                nextBtn.setAlpha(0.7f);
+                enableOption(true);
+                position++;
+                if (position == list.size()){
+                    ///score activity
                     return;
                 }
-                RadioButton uans = findViewById(radio_g.getCheckedRadioButtonId());
-                String ansText = uans.getText().toString();
-                Toast.makeText(getApplicationContext(),ansText, Toast.LENGTH_SHORT).show();
-
-                if (ansText.equals(answers[flag])) {
-                    correct++;
-                    Toast.makeText(getApplicationContext(), "Correct", Toast.LENGTH_SHORT).show();
-                }
-                else {
-                    wrong++;
-                    Toast.makeText(getApplicationContext(), "Wrong", Toast.LENGTH_SHORT).show();
-                }
-
-                flag++;
-
-                if (score != null) {
-                    score.setText("" + correct);
-                }
-
-                if (flag < questions.length) {
-                    textView1.setText(questions[flag]);
-                    rb1.setText(opt[flag*4]);
-                    rb2.setText(opt[flag*4 +1]);
-                    rb3.setText(opt[flag*4 +2]);
-                    rb4.setText(opt[flag*4 +3]);
-                }
-                else
-                {
-                    marks = correct;
-                    Intent in = new Intent(getApplicationContext(), ResultActivity.class);
-                    startActivity(in);
-                }
-                radio_g.clearCheck();
-
-                quit.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                        startActivity(intent);
-                        finish();
-                    }
-                });
+                count=0;
+                playAnim(question,0,list.get(position).getQuestion());
             }
         });
+
+    }
+
+    private void playAnim(final View view, final int value, final String data){
+        view.animate().alpha(value).scaleX(value).scaleY(value).setDuration(500).setStartDelay(100)
+                .setInterpolator(new DecelerateInterpolator()).setListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                if (value==0 && count < 4){
+                    String option="";
+                    if (count==0){
+                        option = list.get(position).getOptionA();
+                    }else if (count==1){
+                        option = list.get(position).getOptionB();
+                    }else if (count==2){
+                        option = list.get(position).getOptionC();
+                    }else if (count==3){
+                        option = list.get(position).getOptionD();
+                    }
+                    playAnim(optionsContainer.getChildAt(count),0,option);
+                    count++;
+                }
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+
+                if (value==0){
+                    try {
+                        ((TextView)view).setText(data);
+                        noIndicator.setText(position + 1 + "/" + list.size());
+
+                    }catch (ClassCastException ex){
+                        ((Button)view).setText(data);
+                    }
+                    view.setTag(data);
+                    playAnim(view,1,data);
+                }
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        });
+    }
+    private void checkAnswer(Button selectedOption){
+        enableOption(false);
+        nextBtn.setEnabled(true);
+        nextBtn.setAlpha(1);
+        if (selectedOption.getText().toString().equals(list.get(position).getCorrectANS())) {
+            //correct
+            score++;
+            selectedOption.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#4CAF50")));
+
+        }else
+        {
+            //incorrect
+            selectedOption.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#ff0000")));
+            Button correctoption =(Button) optionsContainer.findViewWithTag(list.get(position).getCorrectANS());
+            correctoption.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#4CAF50")));
+        }
+
+
+    }
+    private void enableOption(boolean enable){
+
+        for (int i = 0; i < 4; i++) {
+            optionsContainer.getChildAt(i).setEnabled(enable);
+            if (enable){
+                optionsContainer.getChildAt(i).setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#989898")));
+
+
+            }
+        }
     }
 }
